@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}Researcher Dashboard - RGMS{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-speedometer2 me-2"></i>Researcher Dashboard</h2>
+    <a href="{{ url_for('proposals.create') }}" class="btn btn-primary">
+        <i class="bi bi-plus-circle me-1"></i>New Proposal
+    </a>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-0">{{ stats.total }}</h4>
+                        <small>Total Proposals</small>
+                    </div>
+                    <i class="bi bi-file-earmark-text" style="font-size: 2rem; opacity: 0.5;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-dark">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-0">{{ stats.draft }}</h4>
+                        <small>Drafts</small>
+                    </div>
+                    <i class="bi bi-pencil" style="font-size: 2rem; opacity: 0.5;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-0">{{ stats.submitted }}</h4>
+                        <small>Under Review</small>
+                    </div>
+                    <i class="bi bi-hourglass-split" style="font-size: 2rem; opacity: 0.5;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-0">{{ stats.approved + stats.funded }}</h4>
+                        <small>Approved/Funded</small>
+                    </div>
+                    <i class="bi bi-check-circle" style="font-size: 2rem; opacity: 0.5;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Proposals -->
+<div class="card shadow-sm">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">My Proposals</h5>
+        <a href="{{ url_for('proposals.my_proposals') }}" class="btn btn-sm btn-outline-primary">View All</a>
+    </div>
+    <div class="card-body">
+        {% if proposals %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Submitted</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for proposal in proposals[:5] %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('proposals.view', proposal_id=proposal.id) }}">
+                                {{ proposal.title[:50] }}{% if proposal.title|length > 50 %}...{% endif %}
+                            </a>
+                        </td>
+                        <td>${{ "{:,.2f}".format(proposal.requested_amount) }}</td>
+                        <td>
+                            {% if proposal.status == 'draft' %}
+                            <span class="badge bg-secondary">Draft</span>
+                            {% elif proposal.status == 'submitted' %}
+                            <span class="badge bg-primary">Submitted</span>
+                            {% elif proposal.status == 'under_review' %}
+                            <span class="badge bg-info">Under Review</span>
+                            {% elif proposal.status == 'approved' %}
+                            <span class="badge bg-success">Approved</span>
+                            {% elif proposal.status == 'rejected' %}
+                            <span class="badge bg-danger">Rejected</span>
+                            {% elif proposal.status == 'funded' %}
+                            <span class="badge bg-success">Funded</span>
+                            {% else %}
+                            <span class="badge bg-secondary">{{ proposal.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ proposal.submission_date.strftime('%Y-%m-%d') if proposal.submission_date else 'Not
+                            submitted' }}</td>
+                        <td>
+                            <a href="{{ url_for('proposals.view', proposal_id=proposal.id) }}"
+                                class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            {% if proposal.status == 'draft' %}
+                            <a href="{{ url_for('proposals.edit', proposal_id=proposal.id) }}"
+                                class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-file-earmark-plus text-muted" style="font-size: 4rem;"></i>
+            <p class="text-muted mt-3">You haven't created any proposals yet.</p>
+            <a href="{{ url_for('proposals.create') }}" class="btn btn-primary">Create Your First Proposal</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

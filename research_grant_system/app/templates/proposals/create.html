@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Create Proposal - RGMS{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-file-earmark-plus me-2"></i>Create New Proposal</h2>
+    <a href="{{ url_for('proposals.my_proposals') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back to My Proposals
+    </a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('proposals.create') }}">
+            {{ form.hidden_tag() }}
+
+            <div class="mb-3">
+                <label for="title" class="form-label">Proposal Title *</label>
+                {{ form.title(class="form-control" + (" is-invalid" if form.title.errors else ""), placeholder="Enter a
+                descriptive title for your research proposal") }}
+                {% if form.title.errors %}
+                <div class="invalid-feedback">{{ form.title.errors[0] }}</div>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                <label for="abstract" class="form-label">Abstract *</label>
+                {{ form.abstract(class="form-control" + (" is-invalid" if form.abstract.errors else ""), rows=5,
+                placeholder="Provide a brief summary of your research (100-5000 characters)") }}
+                {% if form.abstract.errors %}
+                <div class="invalid-feedback">{{ form.abstract.errors[0] }}</div>
+                {% endif %}
+                <div class="form-text">Minimum 100 characters required</div>
+            </div>
+
+            <div class="mb-3">
+                <label for="objectives" class="form-label">Research Objectives</label>
+                {{ form.objectives(class="form-control", rows=4, placeholder="List the main objectives of your
+                research") }}
+            </div>
+
+            <div class="mb-3">
+                <label for="methodology" class="form-label">Methodology</label>
+                {{ form.methodology(class="form-control", rows=4, placeholder="Describe the methodology you will use")
+                }}
+            </div>
+
+            <div class="mb-3">
+                <label for="expected_outcomes" class="form-label">Expected Outcomes</label>
+                {{ form.expected_outcomes(class="form-control", rows=3, placeholder="What outcomes do you expect from
+                this research?") }}
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="requested_amount" class="form-label">Requested Amount ($) *</label>
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        {{ form.requested_amount(class="form-control" + (" is-invalid" if form.requested_amount.errors
+                        else ""), placeholder="0.00") }}
+                    </div>
+                    {% if form.requested_amount.errors %}
+                    <div class="invalid-feedback d-block">{{ form.requested_amount.errors[0] }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label for="duration_months" class="form-label">Duration (months) *</label>
+                    {{ form.duration_months(class="form-control" + (" is-invalid" if form.duration_months.errors else
+                    "")) }}
+                    {% if form.duration_months.errors %}
+                    <div class="invalid-feedback">{{ form.duration_months.errors[0] }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <hr>
+
+            <div class="d-flex gap-2">
+                {{ form.submit(class="btn btn-outline-primary") }}
+                <button type="submit" name="submit_for_review" class="btn btn-primary">
+                    <i class="bi bi-send me-1"></i>Save & Submit for Review
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}Evaluate Proposal - RGMS{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-clipboard-check me-2"></i>Evaluate Proposal</h2>
+    <a href="{{ url_for('reviews.assigned_reviews') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back to Assigned Reviews
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Review Form -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Review Form</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+
+                    <h6 class="text-muted mb-3">Scoring (1-10 scale)</h6>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="technical_merit" class="form-label">Technical Merit *</label>
+                            {{ form.technical_merit(class="form-control" + (" is-invalid" if form.technical_merit.errors
+                            else "")) }}
+                            {% if form.technical_merit.errors %}
+                            <div class="invalid-feedback">{{ form.technical_merit.errors[0] }}</div>
+                            {% endif %}
+                            <div class="form-text">Quality of research methodology and approach</div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="feasibility" class="form-label">Feasibility *</label>
+                            {{ form.feasibility(class="form-control" + (" is-invalid" if form.feasibility.errors else
+                            "")) }}
+                            {% if form.feasibility.errors %}
+                            <div class="invalid-feedback">{{ form.feasibility.errors[0] }}</div>
+                            {% endif %}
+                            <div class="form-text">Can the research be completed as proposed?</div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="impact" class="form-label">Potential Impact *</label>
+                            {{ form.impact(class="form-control" + (" is-invalid" if form.impact.errors else "")) }}
+                            {% if form.impact.errors %}
+                            <div class="invalid-feedback">{{ form.impact.errors[0] }}</div>
+                            {% endif %}
+                            <div class="form-text">Expected contribution to the field</div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="budget_appropriateness" class="form-label">Budget Appropriateness *</label>
+                            {{ form.budget_appropriateness(class="form-control" + (" is-invalid" if
+                            form.budget_appropriateness.errors else "")) }}
+                            {% if form.budget_appropriateness.errors %}
+                            <div class="invalid-feedback">{{ form.budget_appropriateness.errors[0] }}</div>
+                            {% endif %}
+                            <div class="form-text">Is the budget justified?</div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="score" class="form-label">Overall Score *</label>
+                        {{ form.score(class="form-control" + (" is-invalid" if form.score.errors else ""),
+                        style="max-width: 200px;") }}
+                        {% if form.score.errors %}
+                        <div class="invalid-feedback">{{ form.score.errors[0] }}</div>
+                        {% endif %}
+                    </div>
+
+                    <hr>
+                    <h6 class="text-muted mb-3">Feedback</h6>
+
+                    <div class="mb-3">
+                        <label for="strengths" class="form-label">Strengths</label>
+                        {{ form.strengths(class="form-control", rows=3, placeholder="What are the proposal's main
+                        strengths?") }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="weaknesses" class="form-label">Weaknesses</label>
+                        {{ form.weaknesses(class="form-control", rows=3, placeholder="What are the proposal's
+                        weaknesses?") }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="comments" class="form-label">General Comments *</label>
+                        {{ form.comments(class="form-control" + (" is-invalid" if form.comments.errors else ""), rows=4,
+                        placeholder="Provide detailed feedback (minimum 50 characters)") }}
+                        {% if form.comments.errors %}
+                        <div class="invalid-feedback">{{ form.comments.errors[0] }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="suggestions" class="form-label">Suggestions for Improvement</label>
+                        {{ form.suggestions(class="form-control", rows=3, placeholder="How can this proposal be
+                        improved?") }}
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="recommendation" class="form-label">Recommendation *</label>
+                        {{ form.recommendation(class="form-select" + (" is-invalid" if form.recommendation.errors else
+                        ""), style="max-width: 300px;") }}
+                        {% if form.recommendation.errors %}
+                        <div class="invalid-feedback">{{ form.recommendation.errors[0] }}</div>
+                        {% endif %}
+                    </div>
+
+                    <hr>
+
+                    <div class="d-flex gap-2">
+                        {{ form.save_draft(class="btn btn-outline-secondary") }}
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Proposal Summary Sidebar -->
+    <div class="col-lg-4">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Proposal Summary</h5>
+            </div>
+            <div class="card-body">
+                <h6>{{ proposal.title }}</h6>
+                <p class="text-muted small">{{ proposal.abstract[:200] }}...</p>
+
+                <ul class="list-unstyled">
+                    <li><strong>Researcher:</strong> {{ proposal.researcher.full_name }}</li>
+                    <li><strong>Amount:</strong> ${{ "{:,.2f}".format(proposal.requested_amount) }}</li>
+                    <li><strong>Duration:</strong> {{ proposal.duration_months }} months</li>
+                </ul>
+
+                <a href="{{ url_for('proposals.view', proposal_id=proposal.id) }}"
+                    class="btn btn-sm btn-outline-primary" target="_blank">
+                    <i class="bi bi-box-arrow-up-right me-1"></i>View Full Proposal
+                </a>
+            </div>
+        </div>
+
+        {% if documents %}
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Documents</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    {% for doc in documents %}
+                    <li class="mb-2">
+                        <a href="{{ url_for('proposals.download_document', document_id=doc.id) }}"
+                            class="text-decoration-none">
+                            <i class="bi bi-file-earmark me-1"></i>{{ doc.original_filename }}
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

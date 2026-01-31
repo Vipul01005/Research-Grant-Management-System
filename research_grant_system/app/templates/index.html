@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome - RGMS{% endblock %}
+
+{% block content %}
+<div class="row align-items-center min-vh-75">
+    <div class="col-lg-6">
+        <h1 class="display-4 fw-bold text-primary mb-4">
+            Research Grant Management System
+        </h1>
+        <p class="lead text-muted mb-4">
+            Streamline your research funding process from proposal submission to grant allocation.
+            Our platform connects researchers, reviewers, and administrators for efficient grant management.
+        </p>
+        <div class="d-flex gap-3">
+            <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">
+                <i class="bi bi-person-plus me-2"></i>Get Started
+            </a>
+            <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary btn-lg">
+                <i class="bi bi-box-arrow-in-right me-2"></i>Login
+            </a>
+        </div>
+    </div>
+    <div class="col-lg-6 text-center">
+        <i class="bi bi-mortarboard-fill text-primary" style="font-size: 15rem; opacity: 0.3;"></i>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="row mt-5 pt-5">
+    <div class="col-12 text-center mb-4">
+        <h2 class="fw-bold">Key Features</h2>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body text-center">
+                <i class="bi bi-file-earmark-plus text-primary" style="font-size: 3rem;"></i>
+                <h5 class="card-title mt-3">Proposal Submission</h5>
+                <p class="card-text text-muted">Submit research proposals with supporting documents and track their
+                    progress through the review process.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body text-center">
+                <i class="bi bi-clipboard-check text-success" style="font-size: 3rem;"></i>
+                <h5 class="card-title mt-3">Expert Review</h5>
+                <p class="card-text text-muted">Comprehensive evaluation system with detailed scoring criteria and
+                    expert feedback.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body text-center">
+                <i class="bi bi-wallet2 text-warning" style="font-size: 3rem;"></i>
+                <h5 class="card-title mt-3">Grant Allocation</h5>
+                <p class="card-text text-muted">Transparent fund allocation and budget tracking for approved research
+                    projects.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

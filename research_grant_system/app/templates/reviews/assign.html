@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Assign Reviewer - RGMS{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-person-plus me-2"></i>Assign Reviewer</h2>
+    <a href="{{ url_for('proposals.view', proposal_id=proposal.id) }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back to Proposal
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-6">
+        <!-- Assignment Form -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Add Reviewer</h5>
+            </div>
+            <div class="card-body">
+                {% if available_reviewers %}
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+
+                    <div class="mb-3">
+                        <label for="reviewer_id" class="form-label">Select Reviewer</label>
+                        {{ form.reviewer_id(class="form-select") }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="deadline" class="form-label">Review Deadline (Optional)</label>
+                        {{ form.deadline(class="form-control") }}
+                    </div>
+
+                    {{ form.submit(class="btn btn-primary") }}
+                </form>
+                {% else %}
+                <div class="alert alert-warning mb-0">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    All available reviewers have already been assigned to this proposal.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Current Assignments -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Current Reviewers</h5>
+            </div>
+            <div class="card-body">
+                {% if current_reviews %}
+                <div class="list-group list-group-flush">
+                    {% for review in current_reviews %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ review.reviewer.full_name }}</strong>
+                            <br>
+                            <small class="text-muted">
+                                Assigned: {{ review.assigned_date.strftime('%Y-%m-%d') }}
+                                {% if review.deadline %}
+                                • Due: {{ review.deadline.strftime('%Y-%m-%d') }}
+                                {% endif %}
+                            </small>
+                        </div>
+                        <div>
+                            {% if review.status == 'pending' %}
+                            <span class="badge bg-warning text-dark">Pending</span>
+                            <form action="{{ url_for('reviews.remove_assignment', review_id=review.id) }}" method="POST"
+                                class="d-inline">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Remove">
+                                    <i class="bi bi-x"></i>
+                                </button>
+                            </form>
+                            {% elif review.status == 'in_progress' %}
+                            <span class="badge bg-info">In Progress</span>
+                            {% elif review.status == 'completed' %}
+                            <span class="badge bg-success">Completed</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted mb-0">No reviewers assigned yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Proposal Info Sidebar -->
+    <div class="col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Proposal Details</h5>
+            </div>
+            <div class="card-body">
+                <h6>{{ proposal.title }}</h6>
+                <p class="text-muted">{{ proposal.abstract[:300] }}...</p>
+
+                <ul class="list-unstyled">
+                    <li><strong>Researcher:</strong> {{ proposal.researcher.full_name }}</li>
+                    <li><strong>Department:</strong> {{ proposal.researcher.department or 'N/A' }}</li>
+                    <li><strong>Amount:</strong> ${{ "{:,.2f}".format(proposal.requested_amount) }}</li>
+                    <li><strong>Status:</strong>
+                        <span class="badge bg-info">{{ proposal.status|replace('_', ' ')|title }}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

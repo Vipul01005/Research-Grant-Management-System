@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+
+{% block title %}{{ proposal.title }} - RGMS{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-file-earmark-text me-2"></i>Proposal Details</h2>
+    <div>
+        {% if current_user.is_researcher() and proposal.researcher_id == current_user.id %}
+        {% if proposal.status == 'draft' %}
+        <a href="{{ url_for('proposals.edit', proposal_id=proposal.id) }}" class="btn btn-outline-primary">
+            <i class="bi bi-pencil me-1"></i>Edit
+        </a>
+        <form action="{{ url_for('proposals.submit_proposal', proposal_id=proposal.id) }}" method="POST"
+            class="d-inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-success">
+                <i class="bi bi-send me-1"></i>Submit for Review
+            </button>
+        </form>
+        {% endif %}
+        {% endif %}
+
+        {% if current_user.is_admin() or current_user.is_hod() %}
+        {% if proposal.status in ['submitted', 'under_review'] %}
+        <a href="{{ url_for('reviews.assign_reviewer', proposal_id=proposal.id) }}" class="btn btn-primary">
+            <i class="bi bi-person-plus me-1"></i>Assign Reviewer
+        </a>
+        {% endif %}
+        {% endif %}
+
+        <a href="{{ url_for('proposals.my_proposals') if current_user.is_researcher() else url_for('proposals.list_proposals') }}"
+            class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Back
+        </a>
+    </div>
+</div>
+
+<!-- Status Badge -->
+<div class="mb-4">
+    {% if proposal.status == 'draft' %}
+    <span class="badge bg-secondary fs-6">Draft</span>
+    {% elif proposal.status == 'submitted' %}
+    <span class="badge bg-primary fs-6">Submitted</span>
+    {% elif proposal.status == 'under_review' %}
+    <span class="badge bg-info fs-6">Under Review</span>
+    {% elif proposal.status == 'reviewed' %}
+    <span class="badge bg-warning text-dark fs-6">Reviewed</span>
+    {% elif proposal.status == 'approved' %}
+    <span class="badge bg-success fs-6">Approved</span>
+    {% elif proposal.status == 'rejected' %}
+    <span class="badge bg-danger fs-6">Rejected</span>
+    {% elif proposal.status == 'funded' %}
+    <span class="badge bg-success fs-6"><i class="bi bi-currency-dollar"></i> Funded</span>
+    {% endif %}
+
+    {% if proposal.get_average_score() %}
+    <span class="badge bg-primary fs-6 ms-2">Avg Score: {{ proposal.get_average_score() }}/10</span>
+    {% endif %}
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Main Content -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">{{ proposal.title }}</h5>
+            </div>
+            <div class="card-body">
+                <h6 class="text-muted">Abstract</h6>
+                <p>{{ proposal.abstract }}</p>
+
+                {% if proposal.objectives %}
+                <h6 class="text-muted mt-4">Research Objectives</h6>
+                <p>{{ proposal.objectives }}</p>
+                {% endif %}
+
+                {% if proposal.methodology %}
+                <h6 class="text-muted mt-4">Methodology</h6>
+                <p>{{ proposal.methodology }}</p>
+                {% endif %}
+
+                {% if proposal.expected_outcomes %}
+                <h6 class="text-muted mt-4">Expected Outcomes</h6>
+                <p>{{ proposal.expected_outcomes }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Documents -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-paperclip me-2"></i>Documents</h5>
+                {% if proposal.can_edit() and current_user.is_researcher() and proposal.researcher_id == current_user.id
+                %}
+                <a href="{{ url_for('proposals.upload_document', proposal_id=proposal.id) }}"
+                    class="btn btn-sm btn-primary">
+                    <i class="bi bi-upload me-1"></i>Upload
+                </a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if documents %}
+                <div class="list-group list-group-flush">
+                    {% for doc in documents %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="bi bi-file-earmark me-2"></i>
+                            <strong>{{ doc.original_filename }}</strong>
+                            <br>
+                            <small class="text-muted">
+                                {{ doc.file_type|title }} • v{{ doc.version }} • Uploaded {{
+                                doc.uploaded_at.strftime('%Y-%m-%d') }}
+                            </small>
+                        </div>
+                        <div>
+                            <a href="{{ url_for('proposals.download_document', document_id=doc.id) }}"
+                                class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-download"></i>
+                            </a>
+                            {% if proposal.can_edit() and current_user.is_researcher() %}
+                            <form action="{{ url_for('proposals.delete_document', document_id=doc.id) }}" method="POST"
+                                class="d-inline">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger"
+                                    onclick="return confirm('Delete this document?')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted text-center py-3">No documents uploaded yet.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Reviews (visible to non-researchers) -->
+        {% if not current_user.is_researcher() and reviews %}
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-clipboard-check me-2"></i>Reviews</h5>
+            </div>
+            <div class="card-body">
+                {% for review in reviews %}
+                <div class="border-bottom pb-3 mb-3">
+                    <div class="d-flex justify-content-between">
+                        <strong>{{ review.reviewer.full_name }}</strong>
+                        {% if review.status == 'completed' %}
+                        <span class="badge bg-success">Completed</span>
+                        {% else %}
+                        <span class="badge bg-warning text-dark">{{ review.status|title }}</span>
+                        {% endif %}
+                    </div>
+                    {% if review.status == 'completed' %}
+                    <p class="mb-1 mt-2"><strong>Score:</strong> {{ review.score }}/10</p>
+                    <p class="mb-1"><strong>Recommendation:</strong>
+                        {% if review.recommendation == 'approve' %}
+                        <span class="text-success">Approve</span>
+                        {% elif review.recommendation == 'reject' %}
+                        <span class="text-danger">Reject</span>
+                        {% else %}
+                        <span class="text-warning">Revise</span>
+                        {% endif %}
+                    </p>
+                    {% if review.comments %}
+                    <p class="mb-0"><strong>Comments:</strong> {{ review.comments[:200] }}{% if review.comments|length >
+                        200 %}...{% endif %}</p>
+                    {% endif %}
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Details</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                        <small class="text-muted">Researcher</small><br>
+                        <strong>{{ proposal.researcher.full_name }}</strong>
+                    </li>
+                    <li class="mb-2">
+                        <small class="text-muted">Department</small><br>
+                        {{ proposal.researcher.department or 'Not specified' }}
+                    </li>
+                    <li class="mb-2">
+                        <small class="text-muted">Requested Amount</small><br>
+                        <strong class="text-primary">${{ "{:,.2f}".format(proposal.requested_amount) }}</strong>
+                    </li>
+                    <li class="mb-2">
+                        <small class="text-muted">Duration</small><br>
+                        {{ proposal.duration_months }} months
+                    </li>
+                    <li class="mb-2">
+                        <small class="text-muted">Created</small><br>
+                        {{ proposal.created_at.strftime('%B %d, %Y') }}
+                    </li>
+                    {% if proposal.submission_date %}
+                    <li>
+                        <small class="text-muted">Submitted</small><br>
+                        {{ proposal.submission_date.strftime('%B %d, %Y') }}
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

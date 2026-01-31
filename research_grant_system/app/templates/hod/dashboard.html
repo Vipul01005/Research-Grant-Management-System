@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}HOD Dashboard - RGMS{% endblock %}
+
+{% block content %}
+<h2 class="mb-4"><i class="bi bi-speedometer2 me-2"></i>Head of Department Dashboard</h2>
+
+<!-- Proposals Awaiting Approval -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white">
+        <h5 class="mb-0"><i class="bi bi-hourglass-split me-2"></i>Proposals Awaiting Review/Approval</h5>
+    </div>
+    <div class="card-body">
+        {% if proposals %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Researcher</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Reviews</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for proposal in proposals %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('proposals.view', proposal_id=proposal.id) }}">
+                                {{ proposal.title[:40] }}...
+                            </a>
+                        </td>
+                        <td>{{ proposal.researcher.full_name }}</td>
+                        <td>${{ "{:,.2f}".format(proposal.requested_amount) }}</td>
+                        <td>
+                            {% if proposal.status == 'under_review' %}
+                            <span class="badge bg-info">Under Review</span>
+                            {% elif proposal.status == 'reviewed' %}
+                            <span class="badge bg-warning text-dark">Reviewed</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary">{{ proposal.get_review_count() }} reviews</span>
+                            {% if proposal.get_average_score() %}
+                            <span class="badge bg-primary">Avg: {{ proposal.get_average_score() }}/10</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('reviews.review_summary', proposal_id=proposal.id) }}"
+                                class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye me-1"></i>View Reviews
+                            </a>
+                            <a href="{{ url_for('reviews.assign_reviewer', proposal_id=proposal.id) }}"
+                                class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-person-plus me-1"></i>Assign
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+            <p class="text-muted mt-2">No proposals awaiting review at this time.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

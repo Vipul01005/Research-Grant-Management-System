@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}Review Summary - RGMS{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-bar-chart me-2"></i>Review Summary</h2>
+    <a href="{{ url_for('proposals.view', proposal_id=proposal.id) }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back to Proposal
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-4">
+        <!-- Statistics Card -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Review Statistics</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Total Reviews</span>
+                        <span class="badge bg-primary rounded-pill">{{ stats.total_reviews }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Completed</span>
+                        <span class="badge bg-success rounded-pill">{{ stats.completed }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>In Progress</span>
+                        <span class="badge bg-info rounded-pill">{{ stats.in_progress }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Pending</span>
+                        <span class="badge bg-warning rounded-pill">{{ stats.pending }}</span>
+                    </li>
+                </ul>
+
+                {% if stats.average_score %}
+                <hr>
+                <div class="text-center">
+                    <h3 class="text-primary mb-0">{{ stats.average_score }}/10</h3>
+                    <small class="text-muted">Average Score</small>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Recommendations -->
+        {% if stats.completed > 0 %}
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Recommendations</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-2">
+                    <span class="badge bg-success me-2">{{ stats.approve_count }}</span> Approve
+                </div>
+                <div class="mb-2">
+                    <span class="badge bg-warning text-dark me-2">{{ stats.revise_count }}</span> Revise
+                </div>
+                <div>
+                    <span class="badge bg-danger me-2">{{ stats.reject_count }}</span> Reject
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-lg-8">
+        <!-- Reviews List -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Individual Reviews</h5>
+            </div>
+            <div class="card-body">
+                {% for review in reviews %}
+                <div class="border rounded p-3 mb-3">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <strong>{{ review.reviewer.full_name }}</strong>
+                            <br>
+                            <small class="text-muted">{{ review.reviewer.department or 'No Department' }}</small>
+                        </div>
+                        {% if review.status == 'completed' %}
+                        <div class="text-end">
+                            <span class="badge bg-primary fs-6">{{ review.score }}/10</span>
+                            <br>
+                            {% if review.recommendation == 'approve' %}
+                            <span class="badge bg-success mt-1">Recommend Approval</span>
+                            {% elif review.recommendation == 'reject' %}
+                            <span class="badge bg-danger mt-1">Recommend Rejection</span>
+                            {% else %}
+                            <span class="badge bg-warning text-dark mt-1">Requires Revision</span>
+                            {% endif %}
+                        </div>
+                        {% else %}
+                        <span class="badge bg-secondary">{{ review.status|title }}</span>
+                        {% endif %}
+                    </div>
+
+                    {% if review.status == 'completed' %}
+                    <hr>
+                    <div class="row small">
+                        <div class="col-md-6">
+                            <strong>Technical Merit:</strong> {{ review.technical_merit or '-' }}/10<br>
+                            <strong>Feasibility:</strong> {{ review.feasibility or '-' }}/10
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Impact:</strong> {{ review.impact or '-' }}/10<br>
+                            <strong>Budget:</strong> {{ review.budget_appropriateness or '-' }}/10
+                        </div>
+                    </div>
+
+                    {% if review.comments %}
+                    <hr>
+                    <p class="mb-0 small"><strong>Comments:</strong> {{ review.comments }}</p>
+                    {% endif %}
+                    {% endif %}
+                </div>
+                {% else %}
+                <p class="text-muted text-center">No reviews yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

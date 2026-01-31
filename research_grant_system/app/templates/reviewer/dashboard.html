@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}Reviewer Dashboard - RGMS{% endblock %}
+
+{% block content %}
+<h2 class="mb-4"><i class="bi bi-speedometer2 me-2"></i>Reviewer Dashboard</h2>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-0">{{ stats.total }}</h4>
+                        <small>Total Assignments</small>
+                    </div>
+                    <i class="bi bi-clipboard" style="font-size: 2rem; opacity: 0.5;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-warning text-dark">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-0">{{ stats.pending }}</h4>
+                        <small>Pending Reviews</small>
+                    </div>
+                    <i class="bi bi-hourglass-split" style="font-size: 2rem; opacity: 0.5;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-0">{{ stats.completed }}</h4>
+                        <small>Completed</small>
+                    </div>
+                    <i class="bi bi-check-circle" style="font-size: 2rem; opacity: 0.5;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pending Reviews -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white">
+        <h5 class="mb-0"><i class="bi bi-clock me-2"></i>Pending Reviews</h5>
+    </div>
+    <div class="card-body">
+        {% set pending_reviews = reviews|selectattr("status", "equalto", "pending")|list %}
+        {% if pending_reviews %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Proposal</th>
+                        <th>Researcher</th>
+                        <th>Assigned Date</th>
+                        <th>Deadline</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for review in pending_reviews %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('proposals.view', proposal_id=review.proposal.id) }}">
+                                {{ review.proposal.title[:40] }}...
+                            </a>
+                        </td>
+                        <td>{{ review.proposal.researcher.full_name }}</td>
+                        <td>{{ review.assigned_date.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            {% if review.deadline %}
+                            {% if review.is_overdue() %}
+                            <span class="text-danger">{{ review.deadline.strftime('%Y-%m-%d') }} (Overdue)</span>
+                            {% else %}
+                            {{ review.deadline.strftime('%Y-%m-%d') }}
+                            {% endif %}
+                            {% else %}
+                            <span class="text-muted">No deadline</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('reviews.evaluate', review_id=review.id) }}"
+                                class="btn btn-sm btn-primary">
+                                <i class="bi bi-pencil-square me-1"></i>Start Review
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <i class="bi bi-check-circle text-success" style="font-size: 3rem;"></i>
+            <p class="text-muted mt-2">No pending reviews. You're all caught up!</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Recent Completed Reviews -->
+<div class="card shadow-sm">
+    <div class="card-header bg-white">
+        <h5 class="mb-0"><i class="bi bi-check-circle me-2"></i>Recently Completed</h5>
+    </div>
+    <div class="card-body">
+        {% set completed_reviews = reviews|selectattr("status", "equalto", "completed")|list %}
+        {% if completed_reviews %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Proposal</th>
+                        <th>Score</th>
+                        <th>Recommendation</th>
+                        <th>Completed</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for review in completed_reviews[:5] %}
+                    <tr>
+                        <td>{{ review.proposal.title[:40] }}...</td>
+                        <td><span class="badge bg-primary">{{ review.score }}/10</span></td>
+                        <td>
+                            {% if review.recommendation == 'approve' %}
+                            <span class="badge bg-success">Approve</span>
+                            {% elif review.recommendation == 'reject' %}
+                            <span class="badge bg-danger">Reject</span>
+                            {% else %}
+                            <span class="badge bg-warning text-dark">Revise</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ review.completed_date.strftime('%Y-%m-%d') if review.completed_date else '-' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted text-center py-3">No completed reviews yet.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
